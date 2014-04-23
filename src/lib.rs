@@ -66,13 +66,13 @@ mod tests {
     #[test]
     fn compile_command() {
         let c_data = compilation_data();
-        assert!(c_data.args.len() == 91);
+        assert!(c_data.args.len() == 81);
     }
 
     #[test]
     fn code_completion() {
-        let completions = translation_unit().complete_code_at(file_name(), 20, 20);
-        assert!(completions.len() == 47);
+        let completions = translation_unit().complete_code_at(&file_path(), 16, 16);
+        assert!(completions.len() == 39);
     }
 
     #[test]
@@ -86,12 +86,12 @@ mod tests {
 
     #[test]
     fn go_to_definition() {
-        let source_location = translation_unit().go_to_definition(&compilation_database(), file_name(), 20, 20);
+        let source_location = translation_unit().go_to_definition(&compilation_database(), &file_path(), 16, 16);
         debug!("go_to_definition.file: {}", source_location.file);
         debug!("go_to_definition.line: {}", source_location.line);
         debug!("go_to_definition.column: {}", source_location.column);
 
-        assert!(source_location.line == 66);
+        assert!(source_location.line == 13);
         assert!(source_location.column == 9);
     }
 }
