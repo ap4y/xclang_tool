@@ -24,10 +24,10 @@ impl Drop for TranslationUnit {
 }
 
 impl TranslationUnit {
-    pub fn new(compilation_command: &CompilationCommand, file_name: &str) -> TranslationUnit {
+    pub fn new(compilation_command: &CompilationCommand, file_path: &Path) -> TranslationUnit {
         let default_parse_options = unsafe { clang_defaultEditingTranslationUnitOptions() };
         let parse_options = default_parse_options | CXTranslationUnit_PrecompiledPreamble as u32;
-        let _file_name = unsafe { file_name.to_c_str().unwrap() };
+        let _file_name = unsafe { file_path.to_c_str().unwrap() };
         let index = unsafe { clang_createIndex(0, 0) };
 
         let tu = unsafe {
@@ -40,8 +40,8 @@ impl TranslationUnit {
         TranslationUnit { cx_translation_unit: tu, cx_index: index }
     }
 
-    pub fn complete_code_at(&self, file_name: &str, line: int, column: int) -> Vec<CompletionResult> {
-        let _file_name = unsafe { file_name.to_c_str().unwrap() };
+    pub fn complete_code_at(&self, file_path: &Path, line: int, column: int) -> Vec<CompletionResult> {
+        let _file_name = unsafe { file_path.to_c_str().unwrap() };
 
         let completions = unsafe {
             clang_codeCompleteAt(self.cx_translation_unit, _file_name,
@@ -86,19 +86,21 @@ impl TranslationUnit {
         let cx_location = unsafe { clang_getCursorLocation(referenced_cursor) };
         let location = cx_location.expansion_location();
         let m_file = location.file.replace(".h", ".m");
-        c_db.translation_unit_for(m_file);
-        match c_db.translation_unit_for(m_file) {
+
+        match c_db.translation_unit_for(&Path::new(m_file)) {
             Some(child_tu) => {
-                child_tu.go_to_definition(c_db, location.file, location.line, location.column)
+                let line = location.line;
+                let column = location.column;
+                child_tu.go_to_definition(c_db, &Path::new(location.file), line, column)
             },
             None => location
         }
     }
 
-    pub fn go_to_definition(&self, c_db: &CompilationDatabase, file_name: &str,
+    pub fn go_to_definition(&self, c_db: &CompilationDatabase, file_path: &Path,
                             line: uint, column: uint) -> SourceLocation {
 
-        let file = file_name.with_c_str(|_file_name| {
+        let file = file_path.with_c_str(|_file_name| {
             unsafe { clang_getFile(self.cx_translation_unit, _file_name) }
         });
         let location = unsafe { clang_getLocation(self.cx_translation_unit, file,

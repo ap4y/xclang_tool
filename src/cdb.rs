@@ -51,7 +51,7 @@ impl Drop for CompilationDatabase {
 }
 
 impl CompilationDatabase {
-    pub fn from_directory(build_dir: &str) -> Result<CompilationDatabase, CXCompilationDatabase_Error> {
+    pub fn from_directory(build_dir: &Path) -> Result<CompilationDatabase, CXCompilationDatabase_Error> {
         let error = 0;
 
         let cx_c_db = build_dir.with_c_str(|_build_dir| {
@@ -65,7 +65,7 @@ impl CompilationDatabase {
         Ok(CompilationDatabase { cx_c_db: cx_c_db })
     }
 
-    pub fn compilation_command_for(&self, file_name: &str) -> Option<CompilationCommand> {
+    pub fn compilation_command_for(&self, file_name: &Path) -> Option<CompilationCommand> {
         let compile_commands = file_name.with_c_str(|_file_name| {
             unsafe { clang_CompilationDatabase_getCompileCommands(self.cx_c_db, _file_name) }
         });
@@ -85,10 +85,10 @@ impl CompilationDatabase {
         Some(compilation_args)
     }
 
-    pub fn translation_unit_for(&self, file_name: &str) -> Option<TranslationUnit> {
-        let result = self.compilation_command_for(file_name);
+    pub fn translation_unit_for(&self, file_path: &Path) -> Option<TranslationUnit> {
+        let result = self.compilation_command_for(file_path);
         match result {
-            Some(c_data) => Some(TranslationUnit::new(&c_data, file_name)),
+            Some(c_data) => Some(TranslationUnit::new(&c_data, file_path)),
             None => None
         }
     }

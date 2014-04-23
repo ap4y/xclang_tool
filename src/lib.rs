@@ -23,14 +23,20 @@ pub mod types;
 
 #[cfg(test)]
 mod tests {
+    use std::os;
+
     use cdb::*;
     use translation_unit::*;
 
-    fn file_name() -> ~str { ~"/Users/arthurevstifeev/github/Origami/Origami/ORGMAppDelegate.m" }
-    fn c_db_dir() -> ~str { ~"/Users/arthurevstifeev/github/Origami/" }
+    fn c_db_dir() -> Path {
+        os::getcwd().join("./tests/TestApplication")
+    }
+    fn file_path() -> Path {
+        c_db_dir().join("TestApplication/AppDelegate.m")
+    }
 
     fn compilation_database() -> CompilationDatabase {
-        match CompilationDatabase::from_directory(c_db_dir()) {
+        match CompilationDatabase::from_directory(&c_db_dir()) {
             Ok(database) => database,
             Err(_e) => fail!("Unable to load database")
         }
@@ -38,7 +44,7 @@ mod tests {
 
     fn compilation_data() -> CompilationCommand {
         let database = compilation_database();
-        let result = database.compilation_command_for(file_name());
+        let result = database.compilation_command_for(&file_path());
         match result {
             Some(c_data) => c_data,
             None => fail!("Failed requesting compilation data")
@@ -46,7 +52,7 @@ mod tests {
     }
 
     fn translation_unit() -> TranslationUnit {
-        match compilation_database().translation_unit_for(file_name()) {
+        match compilation_database().translation_unit_for(&file_path()) {
             Some(tu) => tu,
             None     => fail!("Unable to return translation unit")
         }
