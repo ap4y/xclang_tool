@@ -1,4 +1,4 @@
-#![crate_id = "rclang:0.1"]
+#![crate_id = "rclang#0.1"]
 #![desc = "Partial rust binding for clang"]
 #![license = "MIT"]
 #![crate_type = "lib"]
