@@ -12,7 +12,7 @@ use std::libc;
 
 mod ffi;
 pub mod cx_string;
-pub mod cdb;
+pub mod compilation_database;
 pub mod translation_unit;
 pub mod source_location;
 pub mod code_completion;
@@ -25,7 +25,7 @@ pub mod types;
 mod tests {
     use std::os;
 
-    use cdb::*;
+    use compilation_database::*;
     use translation_unit::*;
 
     fn c_db_dir() -> Path {

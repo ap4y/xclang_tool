@@ -3,7 +3,7 @@ use std::ptr;
 
 use types::*;
 use ffi::*;
-use cdb::{CompilationCommand, CompilationDatabase};
+use compilation_database::{CompilationCommand, CompilationDatabase};
 use code_completion::CompletionResult;
 use diagnostic::Diagnostic;
 use source_location::SourceLocation;

@@ -7,7 +7,7 @@ use getopts::*;
 use std::os;
 use std::io::fs;
 
-use rclang::cdb::CompilationDatabase;
+use rclang::compilation_database::CompilationDatabase;
 use rclang::translation_unit::TranslationUnit;
 
 fn opts() -> ~[OptGroup] {
