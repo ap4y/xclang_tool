@@ -22,3 +22,5 @@ test:
 
 clean:
 	rm -rf bin
+	rm -rf lib
+	rm -rf tests
