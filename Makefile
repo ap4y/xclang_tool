@@ -5,7 +5,7 @@ all: rclang
 
 rclang:
 	mkdir -p lib
-	rustc --out-dir=lib src/lib.rs
+	rustc --out-dir=lib src/rclang/lib.rs
 
 xclang: rclang
 	mkdir -p bin
@@ -17,7 +17,7 @@ docs:
 
 test:
 	mkdir -p tests
-	rustc $(RUSTC_ARGS) --test src/lib.rs --out-dir=tests
+	rustc $(RUSTC_ARGS) --test src/rclang/lib.rs --out-dir=tests
 	RUST_LOG=debug ./tests/rclang
 
 clean:
