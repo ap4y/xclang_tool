@@ -67,6 +67,11 @@ impl CLike for CXAvailabilityKind {
     fn to_uint(&self) -> uint { *self as uint }
     fn from_uint(v: uint) -> CXAvailabilityKind { unsafe { cast::transmute(v) } }
 }
+impl Eq for CXAvailabilityKind {
+    fn eq(&self, other: &CXAvailabilityKind) -> bool {
+        *self as uint == *other as uint
+    }
+}
 
 #[repr(uint)]
 pub enum CXCompletionChunkKind {
