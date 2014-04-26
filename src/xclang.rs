@@ -1,5 +1,6 @@
 #![feature(globs, phase)]
 
+#[phase(syntax, link)] extern crate log;
 extern crate rclang;
 extern crate getopts;
 
@@ -48,16 +49,26 @@ fn c_db_for(file_path: &Path) -> CompilationDatabase {
     }
 }
 
-fn syntax_check(file_path: &Path, original_file_path: &Path) {
-    let c_db = c_db_for(original_file_path);
-
-    let tu = match c_db.compilation_command_for(original_file_path) {
-        Some(c_data) => TranslationUnit::new(&c_data, file_path),
-        None => fail!("Unable to find compilation command in the database")
-    };
-
+fn syntax_check(tu: &TranslationUnit) {
     for diagnostic in tu.diagnostics().iter() {
         println!("{}", diagnostic.formatted);
+    }
+}
+
+fn code_completion(tu: &TranslationUnit, file_path: &Path, location: &str, prefix: &str) {
+    let loc_split: ~[&str] = location.split_str(":").collect();
+    if loc_split.len() != 2 { fail!("Location should be in format line:column"); }
+
+    let line = from_str(loc_split[0]).unwrap();
+    let column: uint = from_str(loc_split[1]).unwrap();
+
+    let completions = tu.complete_code_at(file_path, line, column - prefix.len() + 1);
+    let mut c_iterator = completions.iter().filter(|&c| {
+        c.availability == CXAvailability_Available
+    });
+    for completion in c_iterator {
+        let result = completion.to_yas();
+        if result.contains(prefix) { println!("{}", result); }
     }
 }
 
@@ -75,13 +86,30 @@ fn main() {
     }
 
     let input = os::getcwd().join(matches.free.get(0).clone());
+    let original_file = match matches.opt_str("o") {
+        Some(f) => os::getcwd().join(f),
+        None => input.clone()
+    };
+    let c_db = c_db_for(&original_file);
+    let tu = match c_db.compilation_command_for(&original_file) {
+        Some(c_data) => TranslationUnit::new(&c_data, &input),
+        None => fail!("Unable to find compilation command in the database")
+    };
 
     if matches.opt_present("s") {
-        let original_file = match matches.opt_str("o") {
-            Some(f) => os::getcwd().join(f),
-            None => input.clone()
-        };
-        syntax_check(&input, &original_file);
+        syntax_check(&tu);
         return;
+    }
+
+    if matches.opt_present("c") {
+        let loc = match matches.opt_str("c") {
+            Some(l) => l,
+            None => fail!("Missing completion location")
+        };
+        let prefix = match matches.opt_str("p") {
+            Some(p) => p,
+            None => ~""
+        };
+        return code_completion(&tu, &input, loc, prefix)
     }
 }
