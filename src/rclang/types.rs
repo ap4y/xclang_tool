@@ -102,6 +102,12 @@ impl CLike for CXCompletionChunkKind {
     fn from_uint(v: uint) -> CXCompletionChunkKind { unsafe { cast::transmute(v) } }
 }
 
+pub enum CXCodeComplete_Flags {
+    CXCodeComplete_IncludeMacros        = 0x01,
+    CXCodeComplete_IncludeCodePatterns  = 0x02,
+    CXCodeComplete_IncludeBriefComments = 0x04
+}
+
 /**
  * Diagnostic
  **/
