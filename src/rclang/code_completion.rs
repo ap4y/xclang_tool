@@ -13,6 +13,25 @@ pub struct CompletionChunk {
     text: ~str
 }
 
+impl fmt::Show for CompletionChunk {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let chunk_text = match self.kind {
+            CXCompletionChunk_ResultType      => "[#" + self.text + "]",
+            CXCompletionChunk_Placeholder     => "<#" + self.text + ">",
+            CXCompletionChunk_TypedText  |
+            CXCompletionChunk_LeftParen  |
+            CXCompletionChunk_RightParen |
+            CXCompletionChunk_Comma      |
+            CXCompletionChunk_HorizontalSpace => self.text.clone(),
+            _ => {
+                debug!("missing: {}:{}", self.kind as int, self.text);
+                self.text.clone()
+            }
+        };
+        f.buf.write(chunk_text.as_bytes())
+    }
+}
+
 /**
  * Completion Results
  **/
@@ -49,12 +68,26 @@ impl CompletionResult {
             chunks:       chunks
         }
     }
+
+    pub fn to_yas(&self) -> ~str {
+        let mut return_value = ~"";
+        let mut snippet = ~"";
+        for chunk in self.chunks.iter() {
+            match chunk.kind {
+                CXCompletionChunk_ResultType  => return_value.push_str(chunk.text),
+                CXCompletionChunk_Placeholder => snippet.push_str("${" + chunk.text + "}"),
+                _ => snippet.push_str(chunk.text)
+            };
+        }
+
+        snippet + "\t" + return_value
+    }
 }
 
 impl fmt::Show for CompletionResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let chunks_text: Vec<~str> = self.chunks.iter().map(|chunk| {
-            chunk.text.clone()
+            chunk.to_str()
         }).collect();
         f.buf.write(chunks_text.connect("").as_bytes())
     }
