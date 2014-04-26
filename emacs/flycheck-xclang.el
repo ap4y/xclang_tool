@@ -1,3 +1,12 @@
+;;; flycheck-xclang.el --- An Objective-C syntax checked using xclang
+
+;; Author: Arthur Evstifeev
+
+;;; Commentary:
+;;
+
+;;; Code:
+
 (flycheck-define-checker xclang
   "An Objective-C syntax checker using xclang-tool."
   :command ("xclang"
@@ -11,3 +20,5 @@
   :modes objc-mode)
 
 (add-to-list 'flycheck-checkers 'xclang)
+
+;;; flycheck-xclang.el ends here
