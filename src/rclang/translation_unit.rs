@@ -40,7 +40,7 @@ impl TranslationUnit {
         TranslationUnit { cx_translation_unit: tu, cx_index: index }
     }
 
-    pub fn complete_code_at(&self, file_path: &Path, line: int, column: int) -> Vec<CompletionResult> {
+    pub fn complete_code_at(&self, file_path: &Path, line: uint, column: uint) -> Vec<CompletionResult> {
         let _file_name = unsafe { file_path.to_c_str().unwrap() };
 
         let completions = unsafe {
