@@ -9,18 +9,19 @@ use std::io::fs;
 
 use rclang::compilation_database::CompilationDatabase;
 use rclang::translation_unit::TranslationUnit;
+use rclang::types::*;
 
 fn opts() -> ~[OptGroup] {
     ~[optflag("s", "syntax-check", "perform syntax check on the file"),
-      optopt("o", "original", "path to the original file, used with syntax-check on temp buffers", "PATH"),
+      optopt("c", "code-completion", "return completion options for the location(line:column)", "LOCATION"),
+      optopt("p", "prefix", "prefix will be used for filtering completion results", "PREFIX"),
+      optopt("o", "original", "path to the original file, used with commands on temp buffers", "PATH"),
       optflag("h", "help", "print this help menu")]
 }
 
 fn print_usage(program: &str, opts: &[OptGroup]) {
-    println!("Usage: {} [options] file_path", program);
-    for opt in opts.iter() {
-        println!("-{}\t--{}\t{}", opt.short_name, opt.long_name, opt.desc);
-    }
+    let brief = format!("Usage: {} [options] file_path", program);
+    println!("{}", getopts::usage(brief, opts));
 }
 
 fn c_db_for(file_path: &Path) -> CompilationDatabase {
