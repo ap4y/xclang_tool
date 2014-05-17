@@ -9,8 +9,8 @@ use ffi::*;
  **/
 
 pub struct CompletionChunk {
-    kind: CXCompletionChunkKind,
-    text: ~str
+    pub kind: CXCompletionChunkKind,
+    pub text: ~str
 }
 
 impl fmt::Show for CompletionChunk {
@@ -37,9 +37,9 @@ impl fmt::Show for CompletionChunk {
  **/
 
 pub struct CompletionResult {
-    priority:     uint,
-    comment:      ~str,
-    availability: CXAvailabilityKind,
+    pub priority:     uint,
+    pub comment:      ~str,
+    pub availability: CXAvailabilityKind,
     chunks:       Vec<CompletionChunk>
 }
 

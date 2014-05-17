@@ -7,10 +7,10 @@ use ffi::{clang_getSpellingLocation, clang_getExpansionLocation, clang_getFileNa
  * Source Location
  **/
 pub struct SourceLocation {
-    file:   ~str,
-    line:   uint,
-    column: uint,
-    offset: uint
+    pub file:   ~str,
+    pub line:   uint,
+    pub column: uint,
+    pub offset: uint
 }
 
 /**

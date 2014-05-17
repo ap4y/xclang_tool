@@ -47,13 +47,13 @@ pub struct CXUnsavedFile {
 }
 
 pub struct CXCompletionResult {
-    cursor_kind:       c_int,
-    completion_string: CXCompletionString
+    pub cursor_kind:       c_int,
+    pub completion_string: CXCompletionString
 }
 
 pub struct CXCodeCompleteResults {
-    results:     *CXCompletionResult,
-    num_results: c_uint
+    pub results:     *CXCompletionResult,
+    pub num_results: c_uint
 }
 
 #[repr(uint)]
@@ -134,7 +134,7 @@ impl CLike for CXDiagnosticSeverity {
  **/
 
 pub struct CXCursor {
-    kind:  c_uint,
+    pub kind:  c_uint,
     xdata: c_int,
     data0: *c_void,
     data1: *c_void,

@@ -9,11 +9,11 @@ use ffi::*;
  **/
 
 pub struct Diagnostic {
-    category:  ~str,
-    location:  SourceLocation,
-    severity:  CXDiagnosticSeverity,
-    spelling:  ~str,
-    formatted: ~str
+    pub category:  ~str,
+    pub location:  SourceLocation,
+    pub severity:  CXDiagnosticSeverity,
+    pub spelling:  ~str,
+    pub formatted: ~str
 }
 
 impl Diagnostic {
