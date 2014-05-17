@@ -8,7 +8,7 @@
 #[phase(syntax, link)] extern crate log;
 extern crate std;
 extern crate collections;
-use std::libc;
+extern crate libc;
 
 mod ffi;
 pub mod cx_string;
