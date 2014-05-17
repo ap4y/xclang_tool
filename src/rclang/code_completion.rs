@@ -70,8 +70,8 @@ impl CompletionResult {
     }
 
     pub fn to_yas(&self) -> ~str {
-        let mut return_value = ~"";
-        let mut snippet = ~"";
+        let mut return_value = StrBuf::from_str("");
+        let mut snippet = StrBuf::from_str("");
         for chunk in self.chunks.iter() {
             match chunk.kind {
                 CXCompletionChunk_ResultType  => return_value.push_str(chunk.text),
@@ -80,7 +80,10 @@ impl CompletionResult {
             };
         }
 
-        snippet + "\t" + return_value
+        let mut result = snippet.clone();
+        result.push_str("\t");
+        result.push_str(return_value.into_owned());
+        result.into_owned()
     }
 }
 
