@@ -1,115 +1,132 @@
-#![feature(globs, phase)]
+#![crate_id = "xclang#0.1"]
+#![desc = "CLI for common editor actions for Objective-C"]
+#![license = "MIT"]
 
+#![feature(globs)]
+
+#![feature(phase)]
+extern crate regex;
+#[phase(syntax)] extern crate regex_macros;
+
+extern crate collections;
+extern crate serialize;
 #[phase(syntax, link)] extern crate log;
-extern crate rclang;
 extern crate getopts;
+
+extern crate rclang;
+extern crate rfsevents;
 
 use getopts::*;
 use std::os;
-use std::io::fs;
 
-use rclang::compilation_database::CompilationDatabase;
-use rclang::translation_unit::TranslationUnit;
-use rclang::types::*;
+mod helpers;
+mod xcodebuild;
+mod xcodebuild_parser;
 
 fn opts() -> ~[OptGroup] {
-    ~[optflag("s", "syntax-check", "perform syntax check on the file"),
-      optopt("c", "code-completion", "return completion options for the location(line:column)", "LOCATION"),
-      optopt("p", "prefix", "prefix will be used for filtering completion results", "PREFIX"),
+    ~[optopt("l", "location", "location(line:column) for completion", "LOCATION"),
+      optopt("p", "prefix", "prefix for filtering completion results", "PREFIX"),
       optopt("o", "original", "path to the original file, used with commands on temp buffers", "PATH"),
-      optflag("h", "help", "print this help menu")]
+      optopt("w", "workspace", "Workspace name(without extension), used with compilation-database", "WORKSPACE"),
+      optopt("s", "scheme", "Scheme name(defaults to workspace), used with compilation-database", "SCHEME"),
+      optopt("t", "sdk-target", "SDK(iphonesimulator7.0) to use with compilation-database", "TARGET"),
+      optflag("c", "continuous", "Automatically refresh compilation database when new files added")]
 }
 
 fn print_usage(program: &str, opts: &[OptGroup]) {
-    let brief = format!("Usage: {} [options] file_path", program);
+    let commands_help = r##"
+Available commands:
+    help:                 print this help menu
+    syntax-check:         perform syntax check on the file
+    code-completion:      return completion options for the location(line:column)
+    compilation-database: performs project compilation and processes result into compilation database"##;
+
+    let brief = format!("Usage: {} [command] [options] file_path\n{}", program, commands_help);
     println!("{}", getopts::usage(brief, opts));
 }
 
-fn c_db_for(file_path: &Path) -> CompilationDatabase {
-    let mut path = file_path.clone();
-    while path.pop() {
-        let files = match fs::readdir(&path) { Ok(f) => f,  Err(e) => fail!(e) };
-        let result = files.iter().find(|&f| {
-            match f.filename_str() {
-                Some(name) => (name == "compile_commands.json"),
-                None => false
-            }
-        });
-
-        if result.is_some() { break; }
-    };
-
-    if path.components().len() == 0 {
-        fail!("Unable to find directory with compile_commands.json");
-    }
-
-    match CompilationDatabase::from_directory(&path) {
-        Ok(c_db) => c_db,
-        Err(_e) => fail!("Unable to create compilation database")
-    }
-}
-
-fn syntax_check(tu: &TranslationUnit) {
-    for diagnostic in tu.diagnostics().iter() {
-        println!("{}", diagnostic.formatted);
-    }
-}
-
-fn code_completion(tu: &TranslationUnit, file_path: &Path, location: &str, prefix: &str) {
-    let loc_split: ~[&str] = location.split_str(":").collect();
-    if loc_split.len() != 2 { fail!("Location should be in format line:column"); }
-
-    let line = from_str(loc_split[0]).unwrap();
-    let column: uint = from_str(loc_split[1]).unwrap();
-
-    let completions = tu.complete_code_at(file_path, line, column - prefix.len() + 1);
-    let mut c_iterator = completions.iter().filter(|&c| {
-        c.availability == CXAvailability_Available
-    });
-    for completion in c_iterator {
-        let result = completion.to_yas();
-        if result.contains(prefix) { println!("{}", result); }
-    }
-}
-
-fn main() {
-    let args = os::args();
+fn parse_arguments(args: &[~str]) -> (~str, ~str, Matches, Path) {
     let program = args[0].clone();
-    let matches = match getopts(args.tail(), opts()) {
+
+    let option_matches = match getopts(args, opts()) {
         Ok(m) => { m }
         Err(f) => { fail!(f.to_err_msg()) }
     };
 
-    if matches.opt_present("h") || matches.free.is_empty() {
+    if option_matches.free.len() < 3 {
+        print_usage(program, opts());
+        if option_matches.free.len() < 2 { fail!("Command can't be empty") }
+        fail!("File can't be empty")
+    };
+
+    let command = option_matches.free.get(1).clone();
+    let input = os::getcwd().join(option_matches.free.get(2).clone());
+
+    return (program, command, option_matches, input);
+}
+
+pub fn main() {
+    let (program, command, opt_matches, input) = parse_arguments(os::args());
+
+    let original = match opt_matches.opt_str("o") {
+        Some(f) => os::getcwd().join(f),
+        None => input.clone()
+    };
+
+    if command == ~"help" {
         print_usage(program, opts());
         return;
     }
 
-    let input = os::getcwd().join(matches.free.get(0).clone());
-    let original_file = match matches.opt_str("o") {
-        Some(f) => os::getcwd().join(f),
-        None => input.clone()
-    };
-    let c_db = c_db_for(&original_file);
-    let tu = match c_db.compilation_command_for(&original_file) {
-        Some(c_data) => TranslationUnit::new(&c_data, &input),
-        None => fail!("Unable to find compilation command in the database")
-    };
-
-    if matches.opt_present("s") {
-        syntax_check(&tu);
-        return;
-    }
-
-    if matches.opt_present("c") {
-        let loc = match matches.opt_str("c") {
+    if command == ~"code-completion" {
+        let loc = match opt_matches.opt_str("l") {
             Some(l) => l,
             None => fail!("Missing completion location")
         };
-        let prefix = match matches.opt_str("p") {
-            Some(p) => p,
-            None => ~""
+
+        let prefix = match opt_matches.opt_str("p") { Some(p) => p, None => ~"" };
+        return match helpers::code_completion(&original, &input, loc, prefix) {
+            Ok(completion) => println!("{}", completion),
+            Err(e) => fail!("{}", e)
         };
-        return code_completion(&tu, &input, loc, prefix)
+    }
+
+    if command == ~"syntax-check" {
+        return match helpers::syntax_check(&original, &input) {
+            Ok(diagnostic) => println!("{}", diagnostic),
+            Err(e) => fail!("{}", e)
+        };
+    }
+
+    if command == ~"compilation-database" {
+        let workspace = match opt_matches.opt_str("w") {
+            Some(w) => w,
+            None => fail!("Workspace can't be empty")
+        };
+        let scheme = match opt_matches.opt_str("s") { Some(s) => s, None => workspace.clone() };
+        let sdk = match opt_matches.opt_str("t") { Some(t) => t, None => ~"iphonesimulator7.1" };
+
+        let watcher = xcodebuild::XCodeBuildWatcher::new(os::getcwd(), workspace, scheme, sdk);
+        let result = if opt_matches.opt_present("c") { watcher.watch() } else { watcher.run() };
+        return match result { Ok(_) => (), Err(e) => fail!("{}", e) }
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use std::os;
+    use super::{parse_arguments};
+
+    #[test]
+    fn test_parse_arguments() {
+        let arguments = [~"xclang", ~"syntax-check", ~"-l", ~"10:10", ~"-o", ~"bar.m", ~"foo.m"];
+        let (program, command, opt_matches, input) = parse_arguments(arguments);
+
+        assert!(program == ~"xclang");
+        assert!(command == ~"syntax-check");
+        assert!(input == os::getcwd().join("foo.m"));
+        assert!(opt_matches.opt_present("l"));
+        assert!(opt_matches.opt_present("o"));
     }
 }
