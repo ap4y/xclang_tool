@@ -5,8 +5,9 @@
 
 extern crate std;
 extern crate collections;
+extern crate libc;
 
-use std::libc::{c_char, c_double, c_void, c_uint, c_int, c_ulong};
+use libc::{c_char, c_double, c_void, c_uint, c_int, c_ulong};
 use std::{str, cast, ptr};
 use collections::enum_set::CLike;
 
@@ -55,10 +56,7 @@ extern {
     pub fn createStream(path: *c_char,
                         latency: c_double,
                         target: *mut FSEventStream,
-                        callback: extern fn(*mut FSEventStream,
-                                            *c_char,
-                                            c_uint,
-                                            c_ulong)) -> FSEventStreamRef;
+                        callback: extern fn(*mut FSEventStream, *c_char, c_uint, c_ulong)) -> FSEventStreamRef;
 
     pub fn scheduleStreamInRunLoop(stream: FSEventStreamRef) -> c_int;
     pub fn unscheduleStream(stream: FSEventStreamRef);
@@ -71,18 +69,16 @@ extern {
 
 extern fn callback(target: *mut FSEventStream, path: *c_char, flags: c_uint, id: c_ulong) {
     let path_str = unsafe { str::raw::from_c_str(path) };
-    let callback = unsafe { (*target).callback };
-    callback(Path::new(path_str), CLike::from_uint(flags as uint), id);
+    unsafe { ((*target).callback)(Path::new(path_str), CLike::from_uint(flags as uint), id) };
 }
 
-pub struct FSEventStream {
+pub struct FSEventStream<'a> {
     stream_ref: FSEventStreamRef,
-    callback: fn(Path, FSEventStreamEventFlags, FSEventStreamEventId)
+    callback: |Path, FSEventStreamEventFlags, FSEventStreamEventId|:'a
 }
-impl FSEventStream {
-    pub fn new(dir: &Path,
-               latency: f64,
-               cb: fn(Path, FSEventStreamEventFlags, FSEventStreamEventId)) -> ~FSEventStream {
+impl<'a> FSEventStream<'a> {
+    pub fn new(dir: &Path, latency: f64, cb: |Path, FSEventStreamEventFlags, FSEventStreamEventId|:'a) -> ~FSEventStream<'a> {
+
         let mut stream = ~FSEventStream {
             stream_ref: ptr::null(),
             callback: cb
@@ -104,7 +100,8 @@ impl FSEventStream {
         unsafe { unscheduleStream(self.stream_ref); }
     }
 }
-impl Drop for FSEventStream {
+#[unsafe_destructor]
+impl<'a> Drop for FSEventStream<'a> {
     fn drop(&mut self) {
         unsafe { destroyStream(self.stream_ref); }
     }
