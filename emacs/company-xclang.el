@@ -11,7 +11,7 @@
 (require 'yasnippet)
 
 (defcustom company-xclang-executable
-  (executable-find "/Users/arthurevstifeev/github/xclang_tool/bin/xclang")
+  (executable-find "xclang")
   "Location of xclang executable."
   :type 'file)
 
@@ -41,7 +41,7 @@
   (setq file buffer-file-name)
   (setq search (substring-no-properties prefix))
   (with-temp-buffer
-    (setq process-res (call-process company-xclang-executable nil t nil "-p" search "-c" location file))
+    (setq process-res (call-process company-xclang-executable nil t nil "code-completion" "-p" search "-l" location file))
     (company-xclang--parse-output)))
 
 (defun company-xclang--annotation (candidate)

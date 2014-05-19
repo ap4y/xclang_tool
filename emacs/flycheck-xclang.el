@@ -9,9 +9,7 @@
 
 (flycheck-define-checker xclang
   "An Objective-C syntax checker using xclang-tool."
-  :command ("xclang"
-            "-o" source-original
-            "-s" source)
+  :command ("xclang" "syntax-check" "-o" source-original source)
   :error-patterns
   ((error line-start (file-name) ":" line ":" column ": "
           "error: " (message) line-end)
