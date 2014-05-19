@@ -28,14 +28,14 @@ impl XCodeBuildParser {
         let file = file_captures.unwrap().name("file");
 
         let pch_re = regex!(r"-include (?P<pch>.*pch)");
-        let (compiled_pch, original_pch) = match pch_re.captures(command_line) {
+        let command = match pch_re.captures(command_line) {
             Some(captures) => {
                 let compiled = captures.name("pch").to_owned();
-                (compiled.clone(), self.pch_header_for(&(compiled + ".pch")))
+                let original = self.pch_header_for(&(compiled + ".pch"));
+                command_line.replace(compiled, original)
             },
-            None => (~"", ~"")
+            None => command_line.to_owned()
         };
-        let command = command_line.replace(compiled_pch, original_pch);
 
         (file.to_owned(), command.trim().to_owned())
     }
@@ -83,6 +83,7 @@ impl XCodeBuildParser {
 #[cfg(test)]
 mod test {
 
+    use std::io::fs::File;
     use xcodebuild_parser::XCodeBuildParser;
 
     fn parser_with_pch() -> XCodeBuildParser {
@@ -118,5 +119,15 @@ mod test {
         assert!(command_data.file == ~"/foo/TestClass.m")
         assert!(command_data.directory == ~"/Users/arthurevstifeev/github/xclang_tool/tests/TestApplication")
         assert!(command_data.command == ~"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -include /foo/TestApplication-Prefix.pch -c /foo/TestClass.m -o /baz/TestClass.o")
+    }
+
+    #[test]
+    fn parse_xcodebuild_output() {
+        let xcodebuild_log_path = Path::new("./tests/xcodebuild_log");
+        let xcodebuild_log = File::open(&xcodebuild_log_path).read_to_str().unwrap();
+        let mut parser = XCodeBuildParser::new();
+        let results = parser.parse_output(xcodebuild_log);
+
+        assert!(results.len() == 75);
     }
 }
