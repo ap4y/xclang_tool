@@ -4,13 +4,13 @@ CLI for common editor actions for Objective-C. `xclang` focuses on solving commo
 
 ## Problem
 
-While it's really tempting to write `Objective-C` application with your favorite editor, it can be a hard task without proper syntax checker and code completion that `XCode` provides by default. Luckily, [clang tooling](http://clang.llvm.org/doxygen/index.html) can solve most of the problems and it probably used by `XCode` internally. Unfortunately, `clang` tooling requires some preparation steps and it's exposes low-level `C`/`C++` API. `xclang` solves preparation steps for you and exposes simple `CLI` that can be integrated into your editors.
+While it's really tempting to write `Objective-C` application with your favorite editor, it can be a hard task without proper syntax checker and code completion that `XCode` provides by default. Luckily, [clang tooling](http://clang.llvm.org/doxygen/index.html) can solve most of the problems and it probably used by `XCode` internally. Unfortunately, `clang tooling` requires some preparation steps and it's exposes low-level `C`/`C++` API. `xclang` solves preparation steps for you and exposes simple `CLI` that can be integrated into your editors.
 
 ## Design
 
 `xclang` tries to be agnostic to the editors, but it returns results in format that is usable by popular plugins for `Emacs` (`flycheck`, `company`, `autocomplete`) and `Vim`(`syntastic`).
 
-At this point `xclang` doesn't work as backend server, on the other hand it works pretty fast, in most cases latency in `Emacs` is barely noticeable. This can be chance in future.
+At this point `xclang` doesn't work as backend server, on the other hand it works pretty fast, in most cases latency in `Emacs` is barely noticeable. This can be changed in future.
 
 ## Commands
 
