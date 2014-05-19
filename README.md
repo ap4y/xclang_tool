@@ -22,6 +22,8 @@ At this point `xclang` provides this commands:
 
 - `code-complation`. Returns possible completions ordered by `priority` (based on `clang` heuristics) at the specific location (`-l`). If you are doing completion on a temporary buffer, you have to provide `-o` argument. You can specify prefix (`-p`) that will used for filtering completion results.
 
+- `goto-definition`. Returns location of the definition at the specific location (`-l`). This command traverses `translation units` in the project in order to find definition, but will fallback to declaration (ex: for internal framework definitions).
+
 ## Compilation
 
 `xclang` is written with [Rust](http://www.rust-lang.org), so you will need a `Rust` compiler.
