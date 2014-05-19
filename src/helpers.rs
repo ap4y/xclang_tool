@@ -9,7 +9,7 @@ pub fn syntax_check(original_file: &Path, input_file: &Path) -> Result<StrBuf, ~
 
     let mut output = StrBuf::new();
     for diagnostic in tu.diagnostics().iter() {
-        output.push_str(diagnostic.formatted);
+        output.push_str(diagnostic.formatted + "\n");
     }
 
     return Ok(output);
@@ -32,7 +32,7 @@ pub fn code_completion(original_file: &Path, input_file: &Path, location: &str, 
     let mut output = StrBuf::new();
     for completion in c_iterator {
         let result = completion.to_yas();
-        if result.contains(prefix) { output.push_str(result) }
+        if result.contains(prefix) { output.push_str(result + "\n") }
     };
 
     return Ok(output);
@@ -82,7 +82,7 @@ mod test {
         let input = os::getcwd().join("tests/TestApplication/TestApplication/AppDelegate.m");
         let diagnostic = syntax_check(&input, &input);
         assert!(diagnostic.is_ok());
-        assert!(diagnostic.unwrap() == StrBuf::from_str("/Users/arthurevstifeev/github/xclang_tool/tests/TestApplication/TestApplication/AppDelegate.m:17:15: warning: unused variable 'testString' [-Wunused-variable]"));
+        assert!(diagnostic.unwrap() == StrBuf::from_str("/Users/arthurevstifeev/github/xclang_tool/tests/TestApplication/TestApplication/AppDelegate.m:17:15: warning: unused variable 'testString' [-Wunused-variable]\n"));
     }
 
     #[test]
@@ -90,6 +90,6 @@ mod test {
         let input = os::getcwd().join("tests/TestApplication/TestApplication/AppDelegate.m");
         let completion = code_completion(&input, &input, "16:18", "pre");
         assert!(completion.is_ok());
-        assert!(completion.unwrap() == StrBuf::from_str("prepareToTest\tvoid"));
+        assert!(completion.unwrap() == StrBuf::from_str("prepareToTest\tvoid\n"));
     }
 }
