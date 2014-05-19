@@ -14,11 +14,13 @@ At this point `xclang` doesn't work as backend server, on the other hand it work
 
 ## Commands
 
-At this point `xclang` provides this operations:
+At this point `xclang` provides this commands:
 
 - `compilation-database`. Serves as preparation step for other operations, it builds your project with `xcodebuild` CLI, parses output into [Compilation Database](http://clang.llvm.org/docs/JSONCompilationDatabase.html) and writes it into `compile_commands.json`. All other commands will try to find recursively `compile_commands.json` starting from current folder. You can run this command in `continuous` mode (`--continuous`), which will refresh `compilation database` each time you are adding new file.
 
-- `syntax-check`.
+- `syntax-check`. Returns `errors` and `warnings` found in provided file. If you want to do a check on a temporary buffer (like many editor plugins do) you have to provide original buffer with `-o` argument, it will be used to recover compilation arguments from the compilation database.
+
+- `code-complation`. Returns possible completions ordered by `priority` (based on `clang` heuristics) at the specific location (`-l`). If you are doing completion on a temporary buffer, you have to provide `-o` argument. You can specify prefix (`-p`) that will used for filtering completion results.
 
 ## Compilation
 
@@ -32,7 +34,7 @@ Compilation process is super simple, just run: `make` from the project directory
 
 ## Editor Integration
 
-Currently only `Emacs` integration is provided (`company` and `flycheck`). `Syntastic` integration for `Vim` may be provided. Unfortunately, I'm not aware of good completion plugin for `Vim`, thus it's a bit hard to provide `lightweight` completion solution.
+Currently only `Emacs` integration is provided (`company` and `flycheck`). `Syntastic` integration for `Vim` may be provided. Unfortunately, I'm not aware of a good completion plugins for `Vim`, thus it's a bit hard to provide lightweight completion solution.
 
 ### Flycheck
 
