@@ -1,8 +1,8 @@
 CLANG_LIB_DIR = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib
-RFSEVENTS_LIB_DIR = /Users/arthurevstifeev/github/xclang_tool/lib
+RFSEVENTS_LIB_DIR = $(shell pwd)/lib
 RUSTC_ARGS = -L $(CLANG_LIB_DIR) -C link-args="-Wl,-rpath,$(CLANG_LIB_DIR)"
 
-all: rclang rfsevents xclang
+all: xclang
 
 rclang:
 	mkdir -p lib
@@ -23,8 +23,8 @@ docs:
 
 test:
 	mkdir -p tests
-	# rustc $(RUSTC_ARGS) --test src/rclang/lib.rs --out-dir=tests
-	# RUST_LOG=debug ./tests/rclang
+	rustc $(RUSTC_ARGS) --test src/rclang/lib.rs --out-dir=tests
+	RUST_LOG=debug ./tests/rclang
 	rustc -L lib $(RUSTC_ARGS) --test src/xclang.rs --out-dir=tests
 	RUST_LOG=debug ./tests/xclang
 
