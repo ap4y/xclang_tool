@@ -42,7 +42,7 @@ Syntax check for `Emacs` provided as a [flycheck](https://github.com/flycheck/fl
 
 Syntax check happens automatically for `errors` and `warnings`. If it's not happening, you may consider checking if `xclang` is in `flycheck-checkers` list. If you don't have `xclang` in your `PATH` you can set path to the `xclang` directly in `flycheck-xclang-executable` variable.
 
-## Company
+### Company
 
 Code completion for `Emacs` provided as a [company-mode](https://github.com/company-mode/company-mode) plugin. It requires [yasnippet](https://github.com/capitaomorte/yasnippet) for snippet expansion. Once you have installed plugins you can `load-file` on the plugin file from the `emacs` folder, `company` mode and `yasnippet` minor mode have to be active.
 
