@@ -39,6 +39,7 @@ Available commands:
     help:                 print this help menu
     syntax-check:         perform syntax check on the file
     code-completion:      return completion options for the location(line:column)
+    goto-definition:      return definition location for the specific location(line:column)
     compilation-database: performs project compilation and processes result into compilation database"##;
 
     let brief = format!("Usage: {} [command] [options] file_path\n{}", program, commands_help);
@@ -80,13 +81,23 @@ pub fn main() {
 
     if command == ~"code-completion" {
         let loc = match opt_matches.opt_str("l") {
-            Some(l) => l,
-            None => fail!("Missing completion location")
+            Some(l) => l, None => fail!("Missing completion location")
         };
 
         let prefix = match opt_matches.opt_str("p") { Some(p) => p, None => ~"" };
         return match helpers::code_completion(&original, &input, loc, prefix) {
             Ok(completion) => println!("{}", completion),
+            Err(e) => fail!("{}", e)
+        };
+    }
+
+    if command == ~"goto-definition" {
+        let loc = match opt_matches.opt_str("l") {
+            Some(l) => l, None => fail!("Missing completion location")
+        };
+
+        return match helpers::goto_definition(&original, &input, loc) {
+            Ok(location) => println!("{}", location),
             Err(e) => fail!("{}", e)
         };
     }

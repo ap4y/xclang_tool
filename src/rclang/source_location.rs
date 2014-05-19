@@ -1,5 +1,6 @@
 use libc::{c_void, c_uint};
 use std::ptr;
+use std::fmt;
 
 use ffi::{clang_getSpellingLocation, clang_getExpansionLocation, clang_getFileName};
 
@@ -11,6 +12,13 @@ pub struct SourceLocation {
     pub line:   uint,
     pub column: uint,
     pub offset: uint
+}
+
+impl fmt::Show for SourceLocation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let str = self.file + ":" + self.line.to_str() + ":" + self.column.to_str();
+        f.buf.write(str.as_bytes())
+    }
 }
 
 /**
