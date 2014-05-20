@@ -34,7 +34,7 @@
   (and (buffer-modified-p)
        (basic-save-buffer))
   (let ((process-res 0)
-        results location file search))
+        location file search))
   (setq location (format "%d:%d"
                          (line-number-at-pos)
                          (current-column)))
