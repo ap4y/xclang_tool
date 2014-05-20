@@ -49,3 +49,7 @@ Syntax check happens automatically for `errors` and `warnings`. If it's not happ
 Code completion for `Emacs` provided as a [company-mode](https://github.com/company-mode/company-mode) plugin. It requires [yasnippet](https://github.com/capitaomorte/yasnippet) for snippet expansion. Once you have installed plugins you can `load-file` on the plugin file from the `emacs` folder, `company` mode and `yasnippet` minor mode have to be active.
 
 If you don't have `xclang` in your `PATH` you can set path to the `xclang` directly in `company-xclang-executable` variable.
+
+### Goto Definition
+
+Goto definition is implemented as standalone `interactive` function, you can find source in `emacs` folder. If you don't have `xclang` in your `PATH` you can set path to the `xclang` directly in `xclang-definition-executable` variable.
