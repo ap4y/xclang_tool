@@ -86,7 +86,7 @@ pub fn main() {
 
         let prefix = match opt_matches.opt_str("p") { Some(p) => p, None => ~"" };
         return match helpers::code_completion(&original, &input, loc, prefix) {
-            Ok(completion) => println!("{}", completion),
+            Ok(completion) => print!("{}", completion),
             Err(e) => fail!("{}", e)
         };
     }
@@ -97,14 +97,14 @@ pub fn main() {
         };
 
         return match helpers::goto_definition(&original, &input, loc) {
-            Ok(location) => println!("{}", location),
+            Ok(location) => print!("{}", location),
             Err(e) => fail!("{}", e)
         };
     }
 
     if command == ~"syntax-check" {
         return match helpers::syntax_check(&original, &input) {
-            Ok(diagnostic) => println!("{}", diagnostic),
+            Ok(diagnostic) => print!("{}", diagnostic),
             Err(e) => fail!("{}", e)
         };
     }
